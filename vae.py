@@ -3,10 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import os
+from models_color_mnist import *
 
 # training and plot from https://github.com/wiseodd/generative-models/blob/master/VAE/vanilla_vae/vae_tensorflow.py
 
-mnist_moving = np.load(open('../data/mnist_test_seq.npy', mode = 'rb')) # (depth: 20, batch_size: 10000, height: 64, width: 64)
+mnist_moving = np.load(open('data/mnist_test_seq.npy', mode = 'rb')) # (depth: 20, batch_size: 10000, height: 64, width: 64)
 mnist_moving = np.float32(mnist_moving/255)
 num_frames = mnist_moving.shape[0]
 num_examples = mnist_moving.shape[1]
