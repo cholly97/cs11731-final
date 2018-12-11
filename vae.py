@@ -35,8 +35,17 @@ def plot(samples):
 
     return fig
 
-# implement model here
+X = tf.placeholder(tf.float32, shape=[mb_size, output_depth, output_width, output_height, c_dim])
+z = tf.placeholder(tf.float32, shape=[num_plots, z_dim])
 
+z_mu, z_logvar, z_sample = img_encoder(X[:,:-1,])
+# z_mu, z_logvar, z_sample = img_encoder(X)
+tanh_h4, h_4 = img_decoder(z_sample, output_depth, output_width, output_height, c_dim)
+
+tanh_h4_sample, h_4_sample = img_decoder(z, output_depth, output_width, output_height, c_dim)
+
+mean_squared_loss = tf.reduce_mean(tf.squared_difference(tanh_h4, X), [1,2,3,4])
+kl_loss = 0.5 * tf.reduce_sum(tf.exp(z_logvar) + z_mu**2 - 1. - z_logvar, 1)
 vae_loss = mean_squared_loss + kl_loss
 
 solver = tf.train.AdamOptimizer().minimize(vae_loss)
