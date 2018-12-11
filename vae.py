@@ -58,8 +58,27 @@ if not os.path.exists('out/'):
 
 i = 0
 
+def slices(mnist_moving):
+    for i in range(num_frames - output_depth + 1):
+        for j in range(num_examples):
+            yield mnist_moving[i : i + output_depth, j]
+
+slice_gen = slices(mnist_moving)
+
+def next_batch():
+    global slice_gen
+    batch = []
+    for i in range(mb_size):
+        while True:
+            try:
+                batch.append(next(slice_gen))
+                break
+            except StopIteration:
+                slice_gen = slices(mnist_moving)
+    return np.expand_dims(np.stack(batch, axis=0), -1) # add dim for c
+
 for it in range(1000000):
-    X_mb = #TODO
+    X_mb = next_batch() # batch_size * d * h * w * c
 
     _, loss = sess.run([solver, vae_loss], feed_dict={X: X_mb})
 
