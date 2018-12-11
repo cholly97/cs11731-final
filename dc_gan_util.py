@@ -84,7 +84,7 @@ def linear(input_, output_size, scope=None, stddev=0.02, bias_start=0.0, with_w=
   shape = input_.get_shape().as_list()
 
   with tf.variable_scope(scope or "Linear", reuse = reuse) as scope:
-    matrix = tf.get_variable("Matrix", [shape[1], output_size], tf.float32,
+    matrix = tf.get_variable("Matrix", [shape[-1], output_size], tf.float32,
                  tf.random_normal_initializer(stddev=stddev))
     bias = tf.get_variable("bias", [output_size],
       initializer=tf.constant_initializer(bias_start))
@@ -94,8 +94,8 @@ def linear(input_, output_size, scope=None, stddev=0.02, bias_start=0.0, with_w=
       return tf.matmul(input_, matrix) + bias
 
 def conv3d( inputs, num_filter, 
-            filter_depth = 3, filter_h = 3, filter_w = 3, 
-            stride_depth = 1, stride_h = 1, stride_w = 1,
+            filter_depth = 5, filter_h = 5, filter_w = 5, 
+            stride_depth = 2, stride_h = 2, stride_w = 2,
             stddev = 0.02,
             name = "conv3d", output_with_weights = False, reuse = False ):
   """
@@ -116,8 +116,8 @@ def conv3d( inputs, num_filter,
     return conv
 
 def deconv3d( inputs, output_shape,
-              filter_depth = 3, filter_h = 3, filter_w = 3,
-              stride_depth = 1, stride_h = 1, stride_w = 1,
+              filter_depth = 5, filter_h = 5, filter_w = 5,
+              stride_depth = 2, stride_h = 2, stride_w = 2,
               stddev = 0.02, name = "deconv3d", output_with_weights = False, reuse = False ):
   """
     Args:
@@ -129,10 +129,14 @@ def deconv3d( inputs, output_shape,
     out_channel = output_shape[ -1 ]
     w = tf.get_variable( "w", [ filter_depth, filter_h, filter_w, out_channel, in_channel ],
                           initializer = tf.random_normal_initializer( stddev = stddev )  )
-    deconv = tf.nn.conv3d_transpose( inputs, [ 1, filter_depth, filter_h, filter_w, 1 ],
-                                      output_shape,
-                                     [ 1, stride_depth, stride_h, stride_w, 1 ], 
-                                     padding = "SAME", name = "dconv3d" )
+    # deconv = tf.nn.conv3d_transpose( inputs, [ 1, filter_depth, filter_h, filter_w, 1 ],
+    #                                   output_shape,
+    #                                  [ 1, stride_depth, stride_h, stride_w, 1 ], 
+    #                                  padding = "SAME", name = "dconv3d" )
+    deconv = tf.nn.conv3d_transpose( inputs, w,
+                                    output_shape,
+                                    [ 1, stride_depth, stride_h, stride_w, 1 ], 
+                                    padding = "SAME", name = "dconv3d" )
     bias = tf.get_variable( 'bias', [ out_channel ], initializer = tf.constant_initializer( 0.0 ) )
     deconv = tf.reshape( tf.nn.bias_add( deconv, bias ), deconv.get_shape() )
     if output_with_weights:
